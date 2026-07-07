@@ -39,18 +39,16 @@ class _EditExpenseScreenState
   bool saving = false;
 
   final List<String> categories = [
-
-    "FUEL",
-    "FERTILIZER",
-    "SEEDS",
-    "LABOUR",
-    "EQUIPMENT",
-    "TRANSPORT",
-    "ELECTRICITY",
-    "WATER",
-    "OTHER"
-
-  ];
+  "LABOUR",
+  "SEEDS",
+  "FERTILIZER",
+  "PESTICIDES",
+  "FUEL",
+  "MACHINERY",
+  "TRANSPORTATION",
+  "ELECTRICITY",
+  "OTHER",
+];
 
   final List<String> paymentModes = [
 

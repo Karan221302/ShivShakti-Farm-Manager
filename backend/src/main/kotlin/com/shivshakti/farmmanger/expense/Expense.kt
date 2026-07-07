@@ -26,3 +26,19 @@ class Expense(
 
     var description: String? = null
 ): BaseEntity()
+
+fun Expense.toResponse() = ExpenseResponse(
+
+    id = id!!,
+
+    expenseDate = expenseDate,
+
+    amount = amount,
+
+    category = category,
+
+    paymentMode = paymentMode,
+
+    description = description
+
+)

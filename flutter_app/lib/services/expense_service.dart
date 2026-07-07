@@ -97,4 +97,44 @@ Future<void> deleteExpense(
 
 }
 
+
+
+Future<List<Expense>> filterExpenses({
+
+  String? category,
+  String? paymentMode,
+  String? startDate,
+  String? endDate,
+
+}) async {
+
+  final query = <String, dynamic>{};
+
+  if (category != null && category != "ALL") {
+    query["category"] = category;
+  }
+
+  if (paymentMode != null && paymentMode != "ALL") {
+    query["paymentMode"] = paymentMode;
+  }
+
+  if (startDate != null) {
+    query["startDate"] = startDate;
+  }
+
+  if (endDate != null) {
+    query["endDate"] = endDate;
+  }
+
+  final response = await ApiClient.dio.get(
+    "/api/expenses/filter",
+    queryParameters: query,
+  );
+
+  return (response.data as List)
+      .map((e) => Expense.fromJson(e))
+      .toList();
+
+}
+
 }

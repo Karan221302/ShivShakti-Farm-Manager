@@ -3,6 +3,7 @@ package com.shivshakti.farmmanger.expense
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
 import java.util.UUID
+import java.time.LocalDate
 
 @Service
 class ExpenseService(
@@ -13,32 +14,57 @@ class ExpenseService(
 
     fun create(
         request: ExpenseRequest
-    ): Expense {
+    ): ExpenseResponse {
 
         val expense = Expense(
+
             expenseDate = request.expenseDate,
+
             amount = request.amount,
+
             category = request.category,
+
             paymentMode = request.paymentMode,
+
             description = request.description
+
         )
 
-        return expenseRepository.save(expense)
+        return expenseRepository
+            .save(expense)
+            .toResponse()
+
     }
 
-    fun findAll() =
-        expenseRepository.findAll()
+    fun findAll(): List<ExpenseResponse> {
 
-    fun findById(id: UUID): Expense =
-        expenseRepository.findById(id)
+        return expenseRepository.findAll()
+            .map {
+                it.toResponse()
+            }
+
+    }
+
+    fun findById(id: UUID): Expense {
+
+        return expenseRepository.findById(id)
             .orElseThrow {
                 RuntimeException("Expense not found")
             }
 
+    }
+
+    fun getById(id: UUID): ExpenseResponse {
+
+        return findById(id)
+            .toResponse()
+
+    }
+
     fun update(
         id: UUID,
         request: ExpenseRequest
-    ): Expense {
+    ): ExpenseResponse {
 
         val expense = findById(id)
 
@@ -48,7 +74,10 @@ class ExpenseService(
         expense.paymentMode = request.paymentMode
         expense.description = request.description
 
-        return expenseRepository.save(expense)
+        return expenseRepository
+            .save(expense)
+            .toResponse()
+
     }
 
     fun delete(id: UUID) {
@@ -59,6 +88,81 @@ class ExpenseService(
     }
 
     fun totalExpense(): BigDecimal =
-        expenseRepository.findAll()
-            .sumOf { it.amount }
+        expenseRepository.totalExpense()
+
+    fun findByCategory(
+        category: ExpenseCategory
+    ): List<ExpenseResponse> {
+
+        return expenseRepository
+            .findByCategory(category)
+            .map { it.toResponse() }
+
+    }
+
+    fun findByPaymentMode(
+        paymentMode: PaymentMode
+    ): List<ExpenseResponse> {
+
+        return expenseRepository
+            .findByPaymentMode(paymentMode)
+            .map { it.toResponse() }
+
+    }
+
+    fun findByDate(
+        date: LocalDate
+    ): List<ExpenseResponse> {
+
+        return expenseRepository
+            .findByExpenseDate(date)
+            .map { it.toResponse() }
+
+    }
+
+    fun findBetweenDates(
+        start: LocalDate,
+        end: LocalDate
+    ): List<ExpenseResponse> {
+
+        return expenseRepository
+            .findByExpenseDateBetween(start, end)
+            .map { it.toResponse() }
+
+    }
+
+    fun filter(
+
+        category: ExpenseCategory?,
+
+        paymentMode: PaymentMode?,
+
+        startDate: LocalDate?,
+
+        endDate: LocalDate?
+
+    ): List<ExpenseResponse> {
+
+        return expenseRepository.findAll(
+
+            ExpenseSpecification.filter(
+
+                category,
+
+                paymentMode,
+
+                startDate,
+
+                endDate
+
+            )
+
+        ).map {
+
+            it.toResponse()
+
+        }
+
+    }
+
 }

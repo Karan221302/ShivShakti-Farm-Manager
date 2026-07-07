@@ -30,6 +30,43 @@ class _ExpenseListScreenState
   bool loading = true;
 
   double totalExpense = 0;
+  String selectedCategory = "ALL";
+  String selectedPaymentMode = "ALL";
+
+final List<String> categories = [
+
+  "ALL",
+
+  "LABOUR",
+
+  "SEEDS",
+
+  "FERTILIZER",
+
+  "PESTICIDES",
+
+  "FUEL",
+
+  "MACHINERY",
+
+  "TRANSPORTATION",
+
+  "ELECTRICITY",
+
+  "OTHER",
+
+];
+final List<String> paymentModes = [
+
+  "ALL",
+
+  "CASH",
+
+  "UPI",
+
+  "BANK_TRANSFER",
+
+];
 
   @override
   void initState() {
@@ -78,30 +115,82 @@ class _ExpenseListScreenState
     }
 
   }
+  Future<void> applyFilters() async {
 
-  void search(String value) {
+  setState(() {
+    loading = true;
+  });
+
+  try {
+
+    final result = await expenseService.filterExpenses(
+
+      category: selectedCategory,
+
+      paymentMode: selectedPaymentMode,
+
+    );
+
+   setState(() {
+
+  expenses = result;
+
+  filteredExpenses = result;
+
+  totalExpense = result.fold(
+    0,
+    (sum, item) => sum + item.amount,
+  );
+
+  loading = false;
+
+});
+
+search(searchController.text);
+
+  } catch (e) {
 
     setState(() {
-
-      filteredExpenses = expenses.where((expense) {
-
-        return expense.category
-                .toLowerCase()
-                .contains(value.toLowerCase()) ||
-
-            expense.paymentMode
-                .toLowerCase()
-                .contains(value.toLowerCase()) ||
-
-            (expense.description ?? "")
-                .toLowerCase()
-                .contains(value.toLowerCase());
-
-      }).toList();
-
+      loading = false;
     });
 
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+
+      SnackBar(
+        content: Text(e.toString()),
+      ),
+
+    );
+
   }
+
+}
+
+void search(String value) {
+
+  setState(() {
+
+    filteredExpenses = expenses.where((expense) {
+
+      return expense.category
+              .toLowerCase()
+              .contains(value.toLowerCase()) ||
+
+          expense.paymentMode
+              .toLowerCase()
+              .contains(value.toLowerCase()) ||
+
+          (expense.description ?? "")
+              .toLowerCase()
+              .contains(value.toLowerCase());
+
+    }).toList();
+
+  });
+
+}  
 
   Future<void> openAddExpense() async {
 
@@ -305,43 +394,138 @@ class _ExpenseListScreenState
 
                   ),
 
-                  Padding(
+Padding(
 
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                    ),
+  padding: const EdgeInsets.symmetric(
+    horizontal: 16,
+  ),
 
-                    child: TextField(
+  child: TextField(
 
-                      controller: searchController,
+    controller: searchController,
 
-                      onChanged: search,
+    onChanged: search,
 
-                      decoration: InputDecoration(
+    decoration: InputDecoration(
 
-                        hintText: "Search Expense",
+      hintText: "Search Expense",
 
-                        prefixIcon:
-                            const Icon(Icons.search),
+      prefixIcon: const Icon(Icons.search),
 
-                        border: OutlineInputBorder(
+      border: OutlineInputBorder(
 
-                          borderRadius:
-                              BorderRadius.circular(12),
+        borderRadius:
+            BorderRadius.circular(12),
 
-                        ),
+      ),
 
-                      ),
+    ),
 
-                    ),
+  ),
 
-                  ),
+),
 
-                  const SizedBox(height: 10),
+const SizedBox(height: 10),
 
-                  Expanded(
+Padding(
 
-                    child: filteredExpenses.isEmpty
+  padding: const EdgeInsets.symmetric(
+    horizontal: 16,
+  ),
+
+  child: DropdownButtonFormField<String>(
+
+    value: selectedCategory,
+
+    decoration: const InputDecoration(
+
+      labelText: "Category",
+
+      border: OutlineInputBorder(),
+
+    ),
+
+    items: categories.map((category) {
+
+      return DropdownMenuItem<String>(
+
+        value: category,
+
+        child: Text(category),
+
+      );
+
+    }).toList(),
+
+    onChanged: (value) async {
+
+      setState(() {
+
+        selectedCategory = value!;
+
+      });
+
+      await applyFilters();
+
+    },
+
+  ),
+
+),
+
+const SizedBox(height: 10),
+
+Padding(
+
+  padding: const EdgeInsets.symmetric(
+    horizontal: 16,
+  ),
+
+  child: DropdownButtonFormField<String>(
+
+    value: selectedPaymentMode,
+
+    decoration: const InputDecoration(
+
+      labelText: "Payment Mode",
+
+      border: OutlineInputBorder(),
+
+    ),
+
+    items: paymentModes.map((mode) {
+
+      return DropdownMenuItem<String>(
+
+        value: mode,
+
+        child: Text(mode),
+
+      );
+
+    }).toList(),
+
+    onChanged: (value) async {
+
+      setState(() {
+
+        selectedPaymentMode = value!;
+
+      });
+
+      await applyFilters();
+
+    },
+
+  ),
+
+),
+
+const SizedBox(height: 10),
+
+Expanded(
+
+  child: filteredExpenses.isEmpty
 
                         ? ListView(
 
